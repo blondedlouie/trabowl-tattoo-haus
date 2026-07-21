@@ -1,0 +1,2 @@
+const faqs = ["Pain levels?", "Healing process?", "Deposits?", "Booking policy?", "Age requirements?", "Walk-ins vs appointments?", "Piercing care?"];
+export const FaqAccordion = () => <div className="space-y-3">{faqs.map((q) => <details key={q} className="glass rounded-md p-4"><summary className="text-neutral-900 dark:text-white">{q}</summary><p className="mt-2 text-neutral-700 dark:text-paper/70">Answer placeholder for admin/CMS editing.</p></details>)}</div>;
