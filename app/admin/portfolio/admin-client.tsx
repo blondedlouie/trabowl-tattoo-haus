@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 
 interface PortfolioItem {
   id: string;
@@ -34,7 +35,21 @@ export default function AdminDashboardClient({
     "PIERCING",
   ];
 
-  // Form Submission Logic (Upload to Storage Bucket + Write to Table)
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } catch {
+      // Fallback
+    }
+
+    // Clear cookie locally as well
+    document.cookie =
+      "trabowl_admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+    // Use hard window navigation instead of client router to clear session cache
+    window.location.href = "/admin";
+  };
+
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !title)
@@ -46,31 +61,25 @@ export default function AdminDashboardClient({
     try {
       const formData = new FormData();
       formData.append("title", title);
-      formData.append("category", category); // Keeps style classification intact
-      formData.append("file", file); // Changed from "image" to "file" to match backend API
+      formData.append("category", category);
+      formData.append("file", file);
 
-      // We will point this to a safe Next.js API Route handler we'll create next
       const res = await fetch("/api/portfolio/upload", {
         method: "POST",
         body: formData,
       });
 
       if (!res.ok) {
-        // Read the error message sent back by our API route
         const errorData = await res.json().catch(() => ({}));
-        console.error("🔴 Server Upload Error Details:", errorData);
-
         throw new Error(
           errorData.error || `Upload handler failed with status: ${res.status}`,
         );
       }
 
       const newItem = await res.json();
-      // Update local state grid smoothly
       setItems((prev) => [newItem, ...prev]);
       setTitle("");
       setFile(null);
-      // Reset file input element visually
       (document.getElementById("file-input") as HTMLInputElement).value = "";
 
       router.refresh();
@@ -82,7 +91,6 @@ export default function AdminDashboardClient({
     }
   };
 
-  // Content Deletion Engine
   const handleDelete = async (id: string, imageUrl: string) => {
     if (
       !confirm(
@@ -114,19 +122,28 @@ export default function AdminDashboardClient({
   return (
     <div className="max-w-7xl mx-auto py-12 px-4 md:px-8">
       {/* Header Banner */}
-      <div className="border-b border-neutral-200 dark:border-neutral-900 pb-6 mb-12">
-        <span className="text-xs font-mono text-[#A47E4B] dark:text-[#C5A880] uppercase tracking-widest block mb-1">
-          Internal Workspace Engine
-        </span>
-        <h1 className="text-3xl md:text-4xl font-serif text-neutral-900 dark:text-neutral-50">
-          Studio Gallery Manager
-        </h1>
+      <div className="border-b border-neutral-200 dark:border-neutral-900 pb-6 mb-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <span className="text-xs font-mono text-[#A47E4B] dark:text-[#C5A880] uppercase tracking-widest block mb-1">
+            Internal Workspace Engine
+          </span>
+          <h1 className="text-3xl md:text-4xl font-serif text-neutral-900 dark:text-neutral-50">
+            Studio Gallery Manager
+          </h1>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-4 py-2.5 text-xs font-semibold tracking-wider text-neutral-400 hover:text-[#C5A880] border border-neutral-300 dark:border-neutral-800 rounded-xl transition hover:border-[#C5A880]/40 bg-white dark:bg-[#161616]"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>SIGN OUT</span>
+        </button>
       </div>
 
       {/* Two-Column Workspace Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
         {/* LEFT COLUMN: Upload Controller Card */}
-        <div className="bg-white dark:bg-[#121212] p-6 rounded-3xl border border-neutral-200 dark:border-neutral-900 shadow-xl sticky top-6">
+        <div className="bg-white dark:bg-[#121212] p-6 rounded-3xl border border-neutral-200 dark:border-neutral-900 shadow-xl lg:sticky lg:top-6">
           <h2 className="text-lg font-serif mb-6 text-neutral-900 dark:text-neutral-100">
             Publish New Artwork
           </h2>
@@ -212,7 +229,6 @@ export default function AdminDashboardClient({
                     className="object-cover"
                   />
 
-                  {/* System Administration Destruction Interface Overlay */}
                   <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-4 flex flex-col justify-between z-10">
                     <div className="flex justify-between items-start">
                       <span className="text-[9px] font-mono text-neutral-400 bg-neutral-900/90 px-2 py-0.5 rounded">

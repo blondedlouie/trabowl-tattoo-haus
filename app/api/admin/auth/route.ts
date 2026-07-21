@@ -15,11 +15,10 @@ export async function POST(request: Request) {
     if (password === expectedPassword) {
       const response = NextResponse.json({ success: true });
       
-      // Set an HTTP-only secure cookie that lasts 7 days
       response.cookies.set("trabowl_admin_token", "authenticated_session", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax", // Changed from "strict" to prevent local drop issues
         maxAge: 60 * 60 * 24 * 7, 
         path: "/",
       });

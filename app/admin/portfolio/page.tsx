@@ -1,5 +1,4 @@
 // app/admin/portfolio/page.tsx
-export const dynamic = "force-dynamic";
 import { createClient } from "@/lib/supabase";
 import AdminDashboardClient from "./admin-client";
 

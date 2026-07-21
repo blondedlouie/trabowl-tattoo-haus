@@ -1,29 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function AdminLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Explicitly stop default HTML form submission reload
+    setLoading(true);
     setError("");
 
-    const res = await fetch("/api/admin/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
+    try {
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
 
-    if (res.ok) {
-      router.push("/admin/portfolio");
-      router.refresh();
-    } else {
       const data = await res.json();
-      setError(data.error || "Authentication failed");
+
+      if (res.ok) {
+        // Hard-force browser navigation to bypass router cache locks
+        window.location.assign("/admin/portfolio");
+      } else {
+        setError(data.error || "Authentication failed");
+        setLoading(false);
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError("Network error. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -48,7 +56,7 @@ export default function AdminLogin() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-5 py-4 bg-neutral-50 dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-2xl text-sm focus:outline-none focus:border-[#C5A880] transition-colors"
+              className="w-full px-5 py-4 bg-neutral-50 dark:bg-[#1C1C1E] border border-neutral-200 dark:border-neutral-800 rounded-2xl text-sm focus:outline-none focus:border-[#C5A880] transition-colors text-neutral-900 dark:text-neutral-100"
               placeholder="••••••••"
               required
             />
@@ -58,9 +66,10 @@ export default function AdminLogin() {
 
           <button
             type="submit"
-            className="w-full py-4 bg-[#A47E4B] hover:bg-[#8F6C3F] text-white font-bold tracking-wider uppercase text-xs rounded-2xl transition-all shadow-md"
+            disabled={loading}
+            className="w-full py-4 bg-[#A47E4B] hover:bg-[#8F6C3F] text-white font-bold tracking-wider uppercase text-xs rounded-2xl transition-all shadow-md disabled:opacity-50 cursor-pointer"
           >
-            Authenticate Access
+            {loading ? "Authenticating..." : "Authenticate Access"}
           </button>
         </form>
       </div>

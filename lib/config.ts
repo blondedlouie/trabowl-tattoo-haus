@@ -12,7 +12,7 @@ export const STUDIO_CONFIG = {
     weekends: "11:00 AM - 6:00 PM",
   },
   pricingPlaceholders: {
-    minimumCharge: "KES 4,000",
+    minimumCharge: "KES 1,000",
     piercingBase: "KES 1,000",
   },
   services: [
